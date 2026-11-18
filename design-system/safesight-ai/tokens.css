@@ -1,0 +1,16 @@
+:root {
+  --color-primary: #315bdc;
+  --color-primary-strong: #2448bd;
+  --color-primary-soft: #edf2ff;
+  --color-ink: #17243b;
+  --color-text: #34445e;
+  --color-muted: #64748b;
+  --color-subtle: #8b98ab;
+  --color-border: #e1e7f0;
+  --color-background: #f5f7fb;
+  --color-surface: #ffffff;
+  --color-success: #13795b;
+  --color-warning: #9a5a12;
+  --font-body: 'Manrope', 'Segoe UI', sans-serif;
+  --font-mono: 'DM Mono', 'Consolas', monospace;
+}
