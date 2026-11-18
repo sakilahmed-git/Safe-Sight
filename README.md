@@ -4,24 +4,18 @@
 
 A research-oriented computer-vision application for detecting personal protective equipment (PPE) and evaluating model generalisation across camera viewpoints, distances and scene conditions.
 
-## Project status
+## Current status
 
-The repository is being bootstrapped. The current interface is a frontend prototype; no trained model or measured evaluation results are included yet. All preview charts must be treated as illustrative until real experiments are run.
+The repository contains a responsive research workspace and a FastAPI foundation. The UI now has distinct workspace views for overview, dataset preparation, model training, detection, viewpoint challenge, evaluation and research reports.
 
-## Planned architecture
+**No detector has been trained and no measured evaluation results are included yet.** Empty metric states are intentional; do not treat them as zero scores or experimental findings. Dataset selection in the current UI is local staging only and does not upload data.
 
-- **Web:** Next.js, React, TypeScript
+## Architecture
+
+- **Web:** Next.js App Router, React, TypeScript
 - **API:** Python, FastAPI
-- **Vision:** PyTorch, Ultralytics YOLO, OpenCV
-- **Experiments:** reproducible dataset splits, viewpoint and distance evaluation, confusion matrices and per-class metrics
-
-## Research workflow
-
-1. Import and validate annotated images or video frames.
-2. Record dataset provenance, camera viewpoint and distance metadata.
-3. Train or load a single-stage PPE detector.
-4. Evaluate on held-out frontal, side and overhead viewpoints.
-5. Compare precision, recall, mAP, latency and failure cases by domain.
+- **Vision (planned):** PyTorch, Ultralytics YOLO, OpenCV
+- **Experiments:** reproducible dataset splits, viewpoint and distance evaluation, per-class metrics and failure analysis
 
 ## Run the web app
 
@@ -32,10 +26,42 @@ npm run dev
 
 Open http://localhost:3000.
 
+## Run the API
+
+```bash
+cd backend
+python -m venv .venv
+# Windows PowerShell: .venv\\Scripts\\Activate.ps1
+python -m pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+```
+
+API health: http://localhost:8000/api/health  
+OpenAPI docs: http://localhost:8000/docs
+
+## Quality checks
+
+```bash
+npm run lint
+npm run build
+cd backend
+python -m pytest
+```
+
+GitHub Actions runs the web typecheck/build and API tests on pushes and pull requests to `main`.
+
+## Research protocol
+
+Read [docs/RESEARCH_PROTOCOL.md](docs/RESEARCH_PROTOCOL.md) before collecting data or reporting results. The dataset manifest schema is at [docs/DATASET_MANIFEST.schema.json](docs/DATASET_MANIFEST.schema.json), and the implementation sequence is in [docs/ROADMAP.md](docs/ROADMAP.md).
+
+## UI design system
+
+The applied UI/UX rules and token source of truth are documented in [design-system/safesight-ai/MASTER.md](design-system/safesight-ai/MASTER.md). The supplied skill's companion search script and reference files were not included with the uploaded Markdown, so no searchable database match is claimed; the supplied built-in guidance was used as fallback.
+
 ## Research integrity
 
-Do not report illustrative dashboard values as experimental findings. Add dataset licences, annotation guidelines, split definitions, model weights provenance and evaluation commands before claiming results.
+Record dataset licences, annotation guidelines, split definitions, model checkpoint provenance, environment versions and evaluation commands. Keep raw datasets and large model weights out of Git. Never present illustrative dashboard values as experimental results.
 
 ## License
 
-TBD. Add a licence only after deciding how the project should be shared.
+TBD. Add a licence after deciding how the project should be shared.
