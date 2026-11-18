@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState } from 'react';
 import type { ChangeEvent, ReactNode } from 'react';
 import {
-  Activity, ArrowDownToLine, ArrowRight, BarChart3, Camera, Check,
+  Activity, ArrowDownToLine, ArrowRight, BarChart3, Camera,
   ChevronDown, CircleHelp, ClipboardList, Database, FileCheck2, FileImage,
   FlaskConical, Gauge, HardHat, Layers3, Menu, ScanEye, Settings2,
   ShieldCheck, UploadCloud, X, Zap,
