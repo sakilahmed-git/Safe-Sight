@@ -3,20 +3,16 @@ import type { ReactNode } from 'react';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'SafeSight AI — Vision Intelligence',
-  description: 'A focused computer-vision workspace for PPE detection, viewpoint generalisation and reproducible evaluation.',
+  title: 'SafeSight — Vision Workspace',
+  description: 'A focused computer-vision research workspace for PPE detection and cross-view generalisation.',
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#f7f8fb',
+  themeColor: '#fafbfc',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
-  return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
-  );
+  return <html lang="en"><body>{children}</body></html>;
 }
