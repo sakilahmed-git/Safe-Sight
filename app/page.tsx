@@ -1,150 +1,150 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
-import type { ChangeEvent, ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
-  Activity, ArrowDownRight, ArrowRight, ArrowUpRight, BarChart3, Bell,
-  Camera, Check, ChevronDown, CircleHelp, Command, Database, FileText,
-  FlaskConical, Gauge, HardHat, Layers3, Menu, MoreHorizontal, Plus,
-  ScanEye, Search, Settings2, ShieldCheck, SlidersHorizontal, Upload,
-  Video, X, Zap, Clock3, CircleDot, Play, Download, Filter, Image as ImageIcon,
+  Activity, ArrowDownToLine, ArrowUpRight, Bell, Boxes, Camera, Check,
+  ChevronDown, ChevronLeft, ChevronRight, CircleHelp, Command, Database,
+  FileText, FlaskConical, FolderOpen, Gauge, HardHat, ImagePlus, LayoutGrid,
+  Menu, MoreHorizontal, Play, ScanEye, Search, Settings2, ShieldCheck,
+  SlidersHorizontal, Upload, Video, X, Zap
 } from 'lucide-react';
 
-type PageKey = 'Overview' | 'Dataset Studio' | 'Training Studio' | 'Detection Studio' | 'Viewpoint Lab' | 'Evaluation' | 'Reports';
-const nav: { group: string; items: { label: PageKey; icon: ReactNode }[] }[] = [
-  { group: 'WORKSPACE', items: [
-    { label: 'Overview', icon: <Layers3 /> },
-    { label: 'Dataset Studio', icon: <Database /> },
-    { label: 'Training Studio', icon: <FlaskConical /> },
-    { label: 'Detection Studio', icon: <ScanEye /> },
-  ]},
-  { group: 'RESEARCH', items: [
-    { label: 'Viewpoint Lab', icon: <Camera /> },
-    { label: 'Evaluation', icon: <BarChart3 /> },
-    { label: 'Reports', icon: <FileText /> },
-  ]},
-];
-const domains = [
-  { name: 'Frontal CCTV', kind: 'Training domain', detail: 'Reference camera view', status: 'Training set', color: 'blue', progress: 100 },
-  { name: 'Overhead', kind: 'Unseen viewpoint', detail: 'Elevation, occlusion and perspective shift', status: 'Not tested', color: 'orange', progress: 0 },
-  { name: 'Side angle', kind: 'Unseen viewpoint', detail: 'Orientation and profile shift', status: 'Not tested', color: 'orange', progress: 0 },
-  { name: 'Long distance', kind: 'Scale shift', detail: 'Smaller subjects and PPE regions', status: 'Not tested', color: 'violet', progress: 0 },
+type Section = 'Overview' | 'Live monitor' | 'Datasets' | 'Models' | 'Viewpoint lab' | 'Results';
+const sections: { title: Section; icon: typeof LayoutGrid; group: string }[] = [
+  { title: 'Overview', icon: LayoutGrid, group: 'WORKSPACE' },
+  { title: 'Live monitor', icon: Camera, group: 'WORKSPACE' },
+  { title: 'Datasets', icon: Database, group: 'WORKSPACE' },
+  { title: 'Models', icon: Boxes, group: 'WORKSPACE' },
+  { title: 'Viewpoint lab', icon: ScanEye, group: 'RESEARCH' },
+  { title: 'Results', icon: Activity, group: 'RESEARCH' },
 ];
 
-function Heading({ kicker, title, detail, children }: { kicker: string; title: string; detail: string; children?: ReactNode }) {
-  return <div className="page-heading"><div><div className="kicker">{kicker}</div><h1>{title}</h1><p>{detail}</p></div>{children && <div className="heading-actions">{children}</div>}</div>;
-}
-function Metric({ label, value, detail, icon, tone = 'blue' }: { label: string; value: string; detail: string; icon: ReactNode; tone?: string }) {
-  return <article className="metric-card"><div className="metric-label">{label}<span className={'metric-icon ' + tone}>{icon}</span></div><strong>{value}</strong><small>{detail}</small></article>;
-}
-function Empty({ icon, title, detail }: { icon: ReactNode; title: string; detail: string }) {
-  return <div className="empty-state"><span className="empty-symbol">{icon}</span><h3>{title}</h3><p>{detail}</p></div>;
-}
-function Step({ n, title, detail, status }: { n: string; title: string; detail: string; status: string }) {
-  return <div className="step-row"><span className="step-index">{n}</span><div className="step-copy"><strong>{title}</strong><small>{detail}</small></div><span className="step-status">{status}</span></div>;
+function Brand({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
+  return <div className="brand">
+    <button className="brand-mark" onClick={onToggle} aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
+      <ScanEye size={21}/><span className="brand-hover"><Menu size={17}/></span>
+    </button>
+    {!collapsed && <><div className="brand-copy"><strong>SafeSight<span>AI</span></strong><small>VISION WORKSPACE</small></div><button className="brand-toggle" onClick={onToggle} aria-label="Collapse sidebar"><ChevronLeft size={16}/></button></>}
+  </div>;
 }
 
 export default function Home() {
-  const [active, setActive] = useState<PageKey>('Overview');
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [active, setActive] = useState<Section>('Overview');
   const [collapsed, setCollapsed] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  const [query, setQuery] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-  const fileSize = useMemo(() => file ? (file.size / 1024 / 1024).toFixed(2) + ' MB' : '', [file]);
-  const go = (page: PageKey) => { setActive(page); setMobileOpen(false); };
-  const onFile = (e: ChangeEvent<HTMLInputElement>) => { const f = e.target.files?.[0]; if (f) setFile(f); };
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [asset, setAsset] = useState<File | null>(null);
+  const [assetUrl, setAssetUrl] = useState('');
+  const [search, setSearch] = useState('');
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  return <div className={'app-shell ' + (collapsed ? 'sidebar-collapsed' : '')}>
-    {mobileOpen && <button className="mobile-scrim" aria-label="Close navigation" onClick={() => setMobileOpen(false)} />}
-    <aside className={'sidebar ' + (mobileOpen ? 'sidebar-open' : '')}>
-      <div className="brand-row">
-        <div className="brand-symbol"><ScanEye size={21} /></div>
-        <div className="brand-name"><strong>SafeSight<span>AI</span></strong><small>VISION INTELLIGENCE</small></div>
-        <button className="collapse-button" onClick={() => setCollapsed(!collapsed)} aria-label="Toggle sidebar"><Menu size={17}/></button>
-        <button className="mobile-close" onClick={() => setMobileOpen(false)} aria-label="Close navigation"><X size={18}/></button>
-      </div>
-      <button className="project-switcher" onClick={() => go('Overview')}><span className="project-mark"><HardHat size={17}/></span><span className="project-text"><small>ACTIVE PROJECT</small><strong>PPE compliance</strong></span><ChevronDown size={15}/></button>
-      <nav className="nav-groups">{nav.map(group => <div className="nav-group" key={group.group}><div className="nav-caption">{group.group}</div>{group.items.map(item => <button key={item.label} title={collapsed ? item.label : undefined} className={'nav-item ' + (active === item.label ? 'active' : '')} onClick={() => go(item.label)}><span className="nav-icon">{item.icon}</span><span className="nav-text">{item.label}</span>{item.label === 'Viewpoint Lab' && <i className="nav-indicator"/>}</button>)}</div>)}</nav>
+  useEffect(() => {
+    if (!asset) { setAssetUrl(''); return; }
+    const url = URL.createObjectURL(asset);
+    setAssetUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [asset]);
+
+  const chooseFile = (file?: File) => {
+    if (file && (file.type.startsWith('image/') || file.type.startsWith('video/'))) {
+      setAsset(file);
+      setActive('Live monitor');
+    }
+  };
+  const navButton = (item: typeof sections[number]) => {
+    const Icon = item.icon;
+    return <button key={item.title} className={'nav-item ' + (active === item.title ? 'selected' : '')}
+      onClick={() => { setActive(item.title); setMobileOpen(false); }} title={collapsed ? item.title : undefined}>
+      <Icon size={17}/><span>{item.title}</span>{item.title === 'Live monitor' && <i className="nav-live"/>}
+    </button>;
+  };
+
+  return <div className={'app-shell ' + (collapsed ? 'is-collapsed' : '')}>
+    {mobileOpen && <button className="mobile-scrim" aria-label="Close menu" onClick={() => setMobileOpen(false)}/>}
+    <aside className={'sidebar ' + (mobileOpen ? 'mobile-open' : '')}>
+      <Brand collapsed={collapsed} onToggle={() => setCollapsed(v => !v)}/>
+      <button className="project-select" onClick={() => setActive('Overview')}>
+        <span className="project-icon"><HardHat size={17}/></span>
+        <span className="project-label"><small>PROJECT</small><strong>PPE compliance study</strong></span>
+        <ChevronDown size={15}/>
+      </button>
+      <div className="nav-label">WORKSPACE</div>
+      <nav>{sections.filter(s => s.group === 'WORKSPACE').map(navButton)}</nav>
+      <div className="nav-label research-label">RESEARCH</div>
+      <nav>{sections.filter(s => s.group === 'RESEARCH').map(navButton)}</nav>
       <div className="sidebar-bottom">
-        <div className="sidebar-help"><span className="help-icon"><CircleHelp size={17}/></span><div className="help-copy"><strong>Research guide</strong><small>Protocol & experiment standards</small></div><ArrowUpRight size={14}/></div>
-        <button className="nav-item settings-link" onClick={() => go('Reports')}><span className="nav-icon"><Settings2/></span><span className="nav-text">Settings</span></button>
-        <div className="user-row"><span className="user-avatar">SA</span><div className="user-copy"><strong>Research workspace</strong><small>Local environment</small></div><MoreHorizontal size={17}/></div>
+        <div className="storage-mini"><div className="storage-top"><span>LOCAL STORAGE</span><span>—</span></div><div className="storage-track"><i/></div><small>Connect a dataset to begin</small></div>
+        <button className="nav-item"><CircleHelp size={17}/><span>Documentation</span></button>
+        <button className="profile-row"><span className="avatar">SA</span><span className="profile-text"><strong>Research workspace</strong><small>Local environment</small></span><MoreHorizontal size={17}/></button>
       </div>
     </aside>
 
     <div className="main-column">
       <header className="topbar">
-        <div className="top-left"><button className="mobile-menu" onClick={() => setMobileOpen(true)} aria-label="Open navigation"><Menu size={19}/></button><div className="breadcrumbs"><span>Workspace</span><b>/</b><strong>{active}</strong></div></div>
-        <div className="top-right"><div className="search-box"><Search size={15}/><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search workspace"/><kbd>⌘ K</kbd></div><button className="top-icon" aria-label="Notifications"><Bell size={17}/></button><span className="top-divider"/><span className="live-status"><i/> Prototype</span><span className="user-avatar small-avatar">SA</span></div>
+        <div className="crumbs"><button className="mobile-menu" onClick={() => setMobileOpen(true)}><Menu size={19}/></button><span>SafeSight</span><i>/</i><strong>{active}</strong></div>
+        <div className="top-actions">
+          <label className="top-search"><Search size={15}/><input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search workspace"/><kbd>⌘ K</kbd></label>
+          <button className="top-icon" aria-label="Notifications"><Bell size={17}/></button>
+          <span className="top-separator"/>
+          <span className="environment"><i/> LOCAL</span>
+          <span className="avatar avatar-small">SA</span>
+        </div>
       </header>
 
-      <main className="main-content">
+      <main className="content">
         {active === 'Overview' && <>
-          <Heading kicker="PPE COMPLIANCE / COMPUTER VISION" title="Research overview" detail="A single place to build, test and understand PPE detection across camera conditions.">
-            <button className="button button-quiet" onClick={() => go('Dataset Studio')}><Upload size={15}/> Import dataset</button>
-            <button className="button button-primary" onClick={() => go('Viewpoint Lab')}><FlaskConical size={15}/> New experiment</button>
-          </Heading>
-          <section className="hero-panel">
-            <div className="hero-copy"><div className="hero-overline"><span className="hero-pulse"/> RESEARCH OBJECTIVE</div><h2>Does your model see safety<br/>from <em>every angle?</em></h2><p>Train on familiar footage. Challenge it with unseen viewpoints. Measure what holds up.</p><div className="hero-actions"><button className="button button-white" onClick={() => go('Viewpoint Lab')}>Explore viewpoint lab <ArrowRight size={15}/></button><span className="hero-note"><ShieldCheck size={14}/> Controlled evaluation protocol</span></div></div>
-            <div className="hero-visual" aria-hidden="true"><div className="scan-frame"><span className="scan-corner c1"/><span className="scan-corner c2"/><span className="scan-corner c3"/><span className="scan-corner c4"/><div className="scan-person"><div className="person-head"/><div className="person-body"/><div className="person-leg left"/><div className="person-leg right"/><div className="helmet-mark"/></div><div className="scan-tag tag-one"><i/> PERSON DETECTED</div><div className="scan-tag tag-two">PPE · UNVERIFIED</div><div className="scan-line"/></div><div className="visual-coordinate">CAM_04 / FRAME 00182</div></div>
-            <div className="hero-index"><span>01</span><span className="index-line"/><span>04</span></div>
+          <div className="page-head">
+            <div><div className="eyebrow">PPE COMPLIANCE <span>·</span> COMPUTER VISION</div><h1>Good morning.</h1><p>Your research workspace is ready for its first dataset.</p></div>
+            <button className="button button-primary" onClick={() => fileRef.current?.click()}><Upload size={15}/> Import footage</button>
+          </div>
+          <section className="workbench">
+            <div className="workbench-main">
+              <div className="workbench-heading"><div><span className="live-dot"/> <span className="eyebrow">INSPECTION CANVAS</span><span className="canvas-state">NO SOURCE CONNECTED</span></div><button className="icon-button" aria-label="More canvas options"><MoreHorizontal size={18}/></button></div>
+              <div className="canvas-empty" onClick={() => fileRef.current?.click()} onDragOver={e => e.preventDefault()} onDrop={e => {e.preventDefault();chooseFile(e.dataTransfer.files?.[0]);}}>
+                <div className="empty-grid"/>
+                <div className="upload-orb"><ImagePlus size={23}/></div>
+                <h2>Bring a camera frame into focus.</h2>
+                <p>Drop an image or video here to inspect it in the workspace.</p>
+                <button className="button button-light" onClick={e => {e.stopPropagation();fileRef.current?.click();}}>Browse files <ArrowUpRight size={14}/></button>
+                <span className="file-hint">JPG · PNG · WEBP · MP4 · MOV</span>
+              </div>
+              <input ref={fileRef} type="file" accept="image/*,video/*" hidden onChange={e => chooseFile(e.target.files?.[0])}/>
+              <div className="canvas-footer"><span><Command size={13}/> Drop files to preview</span><span>PREVIEW ONLY <i/> INFERENCE NOT CONNECTED</span></div>
+            </div>
+            <aside className="inspector">
+              <div className="inspector-title"><div><span className="eyebrow">WORKSPACE STATUS</span><h3>Project snapshot</h3></div><button className="icon-button"><MoreHorizontal size={17}/></button></div>
+              <div className="status-row"><span className="status-icon"><Database size={16}/></span><div><strong>Dataset</strong><small>Waiting for source files</small></div><span className="status-pill">EMPTY</span></div>
+              <div className="status-row"><span className="status-icon purple"><Boxes size={16}/></span><div><strong>Detection model</strong><small>No checkpoint registered</small></div><span className="status-pill">—</span></div>
+              <div className="status-row"><span className="status-icon amber"><FlaskConical size={16}/></span><div><strong>Experiments</strong><small>No evaluation runs</small></div><span className="status-pill">0</span></div>
+              <div className="inspector-divider"/>
+              <div className="research-question"><span className="eyebrow">RESEARCH QUESTION</span><h3>Can a detector trained on one camera view generalise to another?</h3><p>Measure the effect of viewpoint, distance and occlusion on PPE detection.</p><button className="text-action" onClick={() => setActive('Viewpoint lab')}>Open viewpoint lab <ChevronRight size={14}/></button></div>
+            </aside>
           </section>
-
-          <div className="section-title"><div><h2>Experiment at a glance</h2><p>Live project state <span>·</span> no runs recorded yet</p></div><button className="subtle-link" onClick={() => go('Evaluation')}>View evaluation <ArrowRight size={14}/></button></div>
-          <div className="metrics-grid">
-            <Metric label="Dataset images" value="—" detail="No dataset connected" icon={<Database size={17}/>} />
-            <Metric label="Model checkpoint" value="Not trained" detail="Baseline not available" icon={<Layers3 size={17}/>} tone="violet"/>
-            <Metric label="Test domains" value="0 / 3" detail="Held-out conditions" icon={<Camera size={17}/>} tone="orange"/>
-            <Metric label="Evaluation score" value="—" detail="Awaiting first experiment" icon={<Gauge size={17}/>} tone="green"/>
+          <div className="below-grid">
+            <section className="section-block"><div className="section-heading"><div><span className="eyebrow">EXPERIMENT DESIGN</span><h2>Camera domains</h2></div><button className="text-action" onClick={() => setActive('Viewpoint lab')}>View matrix <ArrowUpRight size={14}/></button></div>
+              <div className="domain-table">
+                <div className="domain-line"><span className="domain-thumb frontal"><Camera size={17}/></span><span className="domain-name"><strong>Frontal CCTV</strong><small>Training reference</small></span><span className="domain-tag reference"><Check size={12}/> Reference</span></div>
+                <div className="domain-line"><span className="domain-thumb overhead"><ScanEye size={17}/></span><span className="domain-name"><strong>Overhead</strong><small>Elevation and occlusion shift</small></span><span className="domain-tag">Not tested</span></div>
+                <div className="domain-line"><span className="domain-thumb side"><Camera size={17}/></span><span className="domain-name"><strong>Side angle</strong><small>Orientation and profile shift</small></span><span className="domain-tag">Not tested</span></div>
+                <div className="domain-line"><span className="domain-thumb distance"><Gauge size={17}/></span><span className="domain-name"><strong>Long distance</strong><small>Scale and resolution shift</small></span><span className="domain-tag">Not tested</span></div>
+              </div>
+            </section>
+            <section className="section-block activity-block"><div className="section-heading"><div><span className="eyebrow">RECENT ACTIVITY</span><h2>Nothing yet</h2></div><span className="activity-mark"><Activity size={17}/></span></div><div className="activity-empty"><span className="activity-line"/><p>Your imports, training runs and evaluation events will appear here.</p></div></section>
           </div>
-          <div className="dashboard-grid">
-            <section className="panel domain-panel"><div className="panel-head"><div><h2>Camera conditions</h2><p>Experiment coverage</p></div><button className="icon-ghost" onClick={() => go('Viewpoint Lab')} aria-label="Open viewpoint lab"><ArrowUpRight size={17}/></button></div><div className="domain-list">{domains.map((d,i)=><div className="domain-item" key={d.name}><span className={'domain-symbol '+d.color}><Camera size={16}/></span><div className="domain-info"><strong>{d.name}</strong><small>{d.detail}</small></div><div className="domain-progress"><div><i style={{width:d.progress+'%'}}/></div><small>{d.status}</small></div></div>)}</div><div className="panel-foot"><span><CircleDot size={13}/> 1 training domain</span><span>3 held-out domains</span></div></section>
-            <section className="panel question-panel"><div className="panel-head"><div><h2>Research focus</h2><p>The question behind this workspace</p></div><span className="focus-icon"><ScanEye size={18}/></span></div><div className="question-content"><span className="question-number">CORE QUESTION / 001</span><h3>Can a detector trained on one camera view generalise to another?</h3><p>Perspective, distance, occlusion and lighting can change how PPE appears. This study isolates those shifts.</p><button className="subtle-link" onClick={() => go('Reports')}>Read research protocol <ArrowRight size={14}/></button></div></section>
-          </div>
-          <div className="section-title readiness-title"><div><h2>Build your experiment</h2><p>Three steps from raw footage to defensible results</p></div></div>
-          <div className="workflow-grid"><button className="workflow-card" onClick={() => go('Dataset Studio')}><span className="workflow-number">01</span><span className="workflow-icon"><Database size={18}/></span><strong>Prepare dataset</strong><small>Import footage, labels and camera metadata.</small><ArrowUpRight size={16}/></button><button className="workflow-card" onClick={() => go('Training Studio')}><span className="workflow-number">02</span><span className="workflow-icon violet"><FlaskConical size={18}/></span><strong>Train baseline</strong><small>Configure and record a reproducible model.</small><ArrowUpRight size={16}/></button><button className="workflow-card" onClick={() => go('Evaluation')}><span className="workflow-number">03</span><span className="workflow-icon orange"><BarChart3 size={18}/></span><strong>Evaluate generalisation</strong><small>Compare performance across unseen views.</small><ArrowUpRight size={16}/></button></div>
         </>}
 
-        {active === 'Dataset Studio' && <>
-          <Heading kicker="DATA MANAGEMENT" title="Dataset studio" detail="Bring your footage and annotations into a traceable research dataset."><button className="button button-primary" onClick={() => inputRef.current?.click()}><Plus size={15}/> Add dataset</button></Heading>
-          <section className="panel upload-panel"><input ref={inputRef} type="file" accept=".zip,.json,.yaml,.yml" className="visually-hidden" onChange={onFile}/><div className="upload-art"><Upload size={23}/></div><h2>{file ? file.name : 'Bring your dataset into SafeSight'}</h2><p>{file ? fileSize + ' · staged locally only' : 'Select an archive or manifest to begin preparing your PPE dataset.'}</p><button className="button button-primary" onClick={() => inputRef.current?.click()}><Upload size={15}/> Choose local file</button><small>ZIP · JSON · YAML · No data is uploaded in this prototype</small>{file && <button className="remove-file" onClick={() => setFile(null)}>Remove selected file</button>}</section>
-          <div className="section-title"><div><h2>Dataset quality gates</h2><p>Checks required before a training run</p></div></div><div className="workflow-grid"><div className="workflow-card static"><span className="workflow-icon"><ImageIcon size={18}/></span><strong>Image integrity</strong><small>Readable files, dimensions and duplicate detection.</small><span className="pill-muted">Not checked</span></div><div className="workflow-card static"><span className="workflow-icon violet"><ShieldCheck size={18}/></span><strong>Annotation quality</strong><small>Class mapping, bounding boxes and label coverage.</small><span className="pill-muted">Not checked</span></div><div className="workflow-card static"><span className="workflow-icon orange"><Layers3 size={18}/></span><strong>Split integrity</strong><small>Group-aware splits to prevent camera and frame leakage.</small><span className="pill-muted">Not checked</span></div></div>
-        </>}
+        {active === 'Live monitor' && <div className="page-head"><div><div className="eyebrow">SOURCE INSPECTION</div><h1>Live monitor</h1><p>Preview source footage and inspect the camera frame.</p></div><button className="button button-primary" onClick={() => fileRef.current?.click()}><Upload size={15}/> Add source</button></div>}
+        {active === 'Live monitor' && <section className="monitor-layout"><div className="monitor-canvas">
+          <div className="monitor-toolbar"><span><span className="live-dot"/> SOURCE VIEWER</span><div><button className="icon-button"><SlidersHorizontal size={16}/></button><button className="icon-button"><MoreHorizontal size={17}/></button></div></div>
+          {assetUrl ? <div className="media-preview">{asset?.type.startsWith('video/') ? <video src={assetUrl} controls playsInline/> : <img src={assetUrl} alt="Selected source preview"/>}<div className="preview-label">LOCAL PREVIEW · NO DETECTIONS</div></div> : <div className="monitor-empty" onClick={() => fileRef.current?.click()}><ImagePlus size={27}/><strong>Select a source to inspect</strong><span>Image and video files are previewed locally.</span><button className="button button-light">Choose source</button></div>}
+          <input ref={fileRef} type="file" accept="image/*,video/*" hidden onChange={e => chooseFile(e.target.files?.[0])}/>
+          <div className="monitor-footer">{asset ? <><span>{asset.name}</span><button className="text-action" onClick={() => setAsset(null)}>Remove source <X size={13}/></button></> : <span>Awaiting source</span>}<span>INFERENCE OFFLINE</span></div>
+        </div><aside className="monitor-inspector"><span className="eyebrow">SOURCE DETAILS</span><h3>{asset ? asset.name : 'No source loaded'}</h3><div className="detail-pair"><span>Type</span><strong>{asset?.type || '—'}</strong></div><div className="detail-pair"><span>Size</span><strong>{asset ? (asset.size / 1048576).toFixed(2) + ' MB' : '—'}</strong></div><div className="detail-pair"><span>Model</span><strong>Not connected</strong></div><div className="detail-pair"><span>Predictions</span><strong>Unavailable</strong></div><div className="inspector-note"><ShieldCheck size={16}/><span>Preview only. SafeSight will not display detections until a real inference model is connected.</span></div></aside></section>}
 
-        {active === 'Training Studio' && <>
-          <Heading kicker="MODEL DEVELOPMENT" title="Training studio" detail="Configure a baseline that can be reproduced, compared and audited."/>
-          <div className="notice"><FlaskConical size={17}/><span><strong>Training pipeline not connected.</strong> No model weights or training metrics exist yet.</span></div>
-          <div className="metrics-grid"><Metric label="Training runs" value="0" detail="No runs recorded" icon={<Activity size={17}/>}/><Metric label="Best checkpoint" value="—" detail="No trained model" icon={<Layers3 size={17}/>} tone="violet"/><Metric label="GPU profile" value="Unknown" detail="Hardware not configured" icon={<Zap size={17}/>} tone="orange"/><Metric label="Run status" value="Idle" detail="Ready for configuration" icon={<Clock3 size={17}/>} tone="green"/></div>
-          <section className="panel"><div className="panel-head"><div><h2>Baseline protocol</h2><p>Required before the first training run</p></div><span className="pill-muted">NOT STARTED</span></div><div className="steps-list"><Step n="01" title="Validate training split" detail="Confirm frontal-view samples, labels and group boundaries." status="Required"/><Step n="02" title="Pin model configuration" detail="Record architecture, version, image size and hyperparameters." status="Required"/><Step n="03" title="Train and register checkpoint" detail="Store weights, logs, environment and run identifier." status="Required"/></div></section>
-        </>}
-
-        {active === 'Detection Studio' && <>
-          <Heading kicker="INFERENCE WORKSPACE" title="Detection studio" detail="Inspect PPE detections, evidence frames and model predictions."/>
-          <div className="split-panels"><section className="panel"><div className="panel-head"><div><h2>Inference canvas</h2><p>Image or video input</p></div><span className="pill-muted">MODEL REQUIRED</span></div><Empty icon={<Video size={22}/>} title="No model connected" detail="A trained checkpoint and inference API are required before detection can run."/></section><section className="panel"><div className="panel-head"><div><h2>Detection summary</h2><p>Predicted PPE classes</p></div></div><div className="class-list">{['Helmet','Safety vest','Gloves','Person'].map((x,i)=><div key={x}><span>{x}</span><span className="class-empty">—</span></div>)}</div><small className="panel-note">No predictions available. Values will populate from real inference.</small></section></div>
-        </>}
-
-        {active === 'Viewpoint Lab' && <>
-          <Heading kicker="GENERALISATION EXPERIMENT" title="Viewpoint lab" detail="Challenge a fixed baseline with camera domains it has never seen."/>
-          <section className="hero-strip"><span className="strip-icon"><Camera size={20}/></span><div><strong>One checkpoint. Three unseen conditions.</strong><small>Keep model weights fixed during cross-view evaluation. Fine-tuning must be reported separately.</small></div><span className="pill-blue">CONTROLLED TEST</span></section>
-          <section className="panel"><div className="panel-head"><div><h2>Domain matrix</h2><p>Training reference and held-out evaluation conditions</p></div><button className="button button-quiet" onClick={() => go('Evaluation')}><SlidersHorizontal size={14}/> Evaluation settings</button></div><div className="domain-matrix">{domains.map((d,i)=><div className="matrix-row" key={d.name}><span className={'matrix-icon '+d.color}><Camera size={17}/></span><div className="matrix-main"><strong>{d.name}</strong><small>{d.detail}</small></div><span className="matrix-role">{d.kind}</span><span className={'matrix-state '+(i===0?'done':'pending')}>{i===0?<Check size={13}/>:<Clock3 size={13}/>} {d.status}</span></div>)}</div></section>
-          <div className="workflow-grid"><div className="workflow-card static"><span className="workflow-number">01</span><strong>Freeze checkpoint</strong><small>Use identical weights across every test domain.</small></div><div className="workflow-card static"><span className="workflow-number">02</span><strong>Lock thresholds</strong><small>Keep confidence, IoU and image size consistent.</small></div><div className="workflow-card static"><span className="workflow-number">03</span><strong>Compare failures</strong><small>Inspect misses by PPE class, size and occlusion.</small></div></div>
-        </>}
-
-        {active === 'Evaluation' && <>
-          <Heading kicker="MEASUREMENT & ANALYSIS" title="Evaluation" detail="Understand model quality by PPE class, viewpoint and distance."/>
-          <div className="notice"><Activity size={17}/><span><strong>No evaluation runs yet.</strong> Metrics are intentionally blank until a labelled test set and trained checkpoint are evaluated.</span></div>
-          <div className="metrics-grid"><Metric label="Precision" value="—" detail="No measured value" icon={<Gauge size={17}/>}/><Metric label="Recall" value="—" detail="No measured value" icon={<Activity size={17}/>} tone="violet"/><Metric label="mAP @ 0.50" value="—" detail="No measured value" icon={<BarChart3 size={17}/>} tone="orange"/><Metric label="mAP @ 0.50:0.95" value="—" detail="No measured value" icon={<BarChart3 size={17}/>} tone="green"/></div>
-          <div className="split-panels"><section className="panel"><div className="panel-head"><div><h2>Performance by domain</h2><p>Cross-view metric comparison</p></div><button className="icon-ghost" aria-label="Filter results"><Filter size={16}/></button></div><Empty icon={<BarChart3 size={22}/>} title="No chart data" detail="Run evaluation on labelled test data to compare each camera condition."/></section><section className="panel"><div className="panel-head"><div><h2>Failure analysis</h2><p>Where detections break down</p></div></div><Empty icon={<ScanEye size={22}/>} title="No failure cases" detail="False positives, missed detections and class-wise errors will appear here."/></section></div>
-        </>}
-
-        {active === 'Reports' && <>
-          <Heading kicker="RESEARCH DOCUMENTATION" title="Reports & protocol" detail="Keep every dataset, experiment and result traceable."/>
-          <section className="panel report-row"><span className="report-icon"><FileText size={20}/></span><div><strong>Research protocol</strong><small>Experimental design, dataset requirements, metrics and validity safeguards.</small></div><a href="https://github.com/sakilahmed-git/Safe-Sight/blob/main/docs/RESEARCH_PROTOCOL.md" target="_blank" rel="noreferrer">Open <ArrowUpRight size={14}/></a></section>
-          <section className="panel report-row"><span className="report-icon violet"><Database size={20}/></span><div><strong>Dataset manifest schema</strong><small>Source, licence, split, viewpoint, distance and annotation metadata.</small></div><a href="https://github.com/sakilahmed-git/Safe-Sight/blob/main/docs/DATASET_MANIFEST.schema.json" target="_blank" rel="noreferrer">Open <ArrowUpRight size={14}/></a></section>
-          <section className="panel report-row"><span className="report-icon orange"><Download size={20}/></span><div><strong>Reproducibility record</strong><small>Dataset version, checkpoint, configuration, environment and evaluation command.</small></div><button onClick={() => go('Viewpoint Lab')}>Review rules <ArrowRight size={14}/></button></section>
-        </>}
-        <footer className="footer"><span>SAFESIGHT AI <i/> RESEARCH WORKSPACE</span><span>PROTOTYPE BUILD · RESULTS ARE NEVER SIMULATED</span></footer>
+        {active === 'Datasets' && <><div className="page-head"><div><div className="eyebrow">DATA MANAGEMENT</div><h1>Datasets</h1><p>Organise footage, annotations and camera metadata.</p></div><button className="button button-primary" onClick={() => fileRef.current?.click()}><Upload size={15}/> Import files</button></div><section className="simple-empty"><div className="empty-orb"><FolderOpen size={24}/></div><h2>Your dataset library is empty.</h2><p>Start with a labelled PPE dataset or add source footage to build one.</p><button className="button button-primary" onClick={() => fileRef.current?.click()}>Choose local files <ArrowUpRight size={14}/></button><input ref={fileRef} type="file" multiple accept="image/*,video/*,.zip,.json,.yaml,.yml" hidden onChange={e => chooseFile(e.target.files?.[0])}/></section></>}
+        {active === 'Models' && <><div className="page-head"><div><div className="eyebrow">MODEL REGISTRY</div><h1>Models</h1><p>Track checkpoints and keep experiments reproducible.</p></div><span className="quiet-status">0 CHECKPOINTS</span></div><section className="simple-empty"><div className="empty-orb purple"><Boxes size={24}/></div><h2>No model registered.</h2><p>Trained checkpoints will appear here with their configuration and evaluation history.</p><button className="button button-light" onClick={() => setActive('Viewpoint lab')}>Explore experiment design <ArrowUpRight size={14}/></button></section></>}
+        {active === 'Viewpoint lab' && <><div className="page-head"><div><div className="eyebrow">GENERALISATION STUDY</div><h1>Viewpoint lab</h1><p>Keep the baseline fixed. Change the camera conditions.</p></div><span className="quiet-status">PROTOCOL 01</span></div><section className="lab-intro"><span className="lab-icon"><ScanEye size={22}/></span><div><strong>One training domain. Three held-out domains.</strong><p>Evaluate cross-view performance without changing model weights or confidence thresholds.</p></div></section><div className="lab-grid">{[{n:'01',name:'Frontal CCTV',desc:'Training reference',type:'TRAINING',tone:'blue'},{n:'02',name:'Overhead',desc:'Elevation and occlusion',type:'HELD OUT',tone:'orange'},{n:'03',name:'Side angle',desc:'Orientation shift',type:'HELD OUT',tone:'purple'},{n:'04',name:'Long distance',desc:'Scale and resolution',type:'HELD OUT',tone:'green'}].map(d=><article className="lab-card" key={d.n}><span className="lab-number">{d.n}</span><span className={'lab-symbol '+d.tone}><Camera size={19}/></span><h3>{d.name}</h3><p>{d.desc}</p><span className={'lab-type '+d.tone}>{d.type}</span></article>)}</div><section className="protocol-strip"><ShieldCheck size={18}/><div><strong>Evaluation integrity</strong><span>Freeze checkpoint, preprocessing and thresholds before comparing domains.</span></div></section></>}
+        {active === 'Results' && <><div className="page-head"><div><div className="eyebrow">MEASUREMENT</div><h1>Results</h1><p>Compare performance across PPE classes and camera viewpoints.</p></div><span className="quiet-status">NO RUNS RECORDED</span></div><section className="simple-empty"><div className="empty-orb green"><Activity size={24}/></div><h2>Results will appear after your first evaluation.</h2><p>Precision, recall, mAP and per-domain failure analysis will be populated from measured runs only.</p><button className="button button-light" onClick={() => setActive('Viewpoint lab')}>Review evaluation protocol <ArrowUpRight size={14}/></button></section></>}
+        <footer className="footer"><span>SAFESIGHT <i/> RESEARCH WORKSPACE</span><span>LOCAL ENVIRONMENT <i/> BUILD 0.2</span></footer>
       </main>
     </div>
   </div>;
