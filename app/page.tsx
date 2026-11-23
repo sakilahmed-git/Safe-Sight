@@ -2,11 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import {
-  Activity, ArrowDownToLine, ArrowUpRight, Bell, Boxes, Camera, Check,
-  ChevronDown, ChevronLeft, ChevronRight, CircleHelp, Command, Database,
-  FileText, FlaskConical, FolderOpen, Gauge, HardHat, ImagePlus, LayoutGrid,
-  Menu, MoreHorizontal, Play, ScanEye, Search, Settings2, ShieldCheck,
-  SlidersHorizontal, Upload, Video, X, Zap
+  Activity, ArrowUpRight, Bell, Boxes, Camera, Check, ChevronDown, ChevronLeft,
+  ChevronRight, CircleHelp, Command, Database, FlaskConical, FolderOpen, Gauge,
+  HardHat, ImagePlus, LayoutGrid, Menu, MoreHorizontal, ScanEye, Search,
+  Settings2, ShieldCheck, SlidersHorizontal, Upload, X
 } from 'lucide-react';
 
 type Section = 'Overview' | 'Live monitor' | 'Datasets' | 'Models' | 'Viewpoint lab' | 'Results';
