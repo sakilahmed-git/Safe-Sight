@@ -3,14 +3,14 @@ import type { ReactNode } from 'react';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'SafeSight AI | PPE Viewpoint Research',
-  description: 'A reproducible research workspace for evaluating PPE detector generalisation across camera viewpoints and distances.',
+  title: 'SafeSight AI — Vision Intelligence',
+  description: 'A focused computer-vision workspace for PPE detection, viewpoint generalisation and reproducible evaluation.',
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#f5f7fb',
+  themeColor: '#f7f8fb',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
