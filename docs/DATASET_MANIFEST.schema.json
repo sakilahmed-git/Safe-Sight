@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SafeSight dataset manifest",
+  "type": "object",
+  "required": [
+    "dataset_name",
+    "version",
+    "classes",
+    "records"
+  ],
+  "properties": {
+    "dataset_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string"
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "license": {
+      "type": "string"
+    },
+    "classes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "image",
+          "split",
+          "viewpoint",
+          "labels"
+        ],
+        "properties": {
+          "image": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-fA-F0-9]{64}$"
+          },
+          "split": {
+            "enum": [
+              "train",
+              "val",
+              "test"
+            ]
+          },
+          "viewpoint": {
+            "enum": [
+              "frontal",
+              "overhead",
+              "side",
+              "other"
+            ]
+          },
+          "distance": {
+            "enum": [
+              "near",
+              "medium",
+              "far",
+              "unknown"
+            ]
+          },
+          "source_group": {
+            "type": "string"
+          },
+          "labels": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
